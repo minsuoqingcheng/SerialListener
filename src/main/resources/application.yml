@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: real-time-push
+
+  mqtt:
+    broker: "tcp://iot.eclipse.org:1883"
+    topic: "mqtt/real-time"
+    qos: 1
+    username: "iot"
+    password: "iot"
+    clientId: "pubClient"
+
+#logging:
+#  level:
+#    root: ERROR
+#    org:
+#      springframework:
+#        security: DEBUG
+#        web: ERROR
+
+---
+server:
+  port: 10001
