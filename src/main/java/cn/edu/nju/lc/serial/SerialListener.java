@@ -2,8 +2,10 @@ package cn.edu.nju.lc.serial;
 
 import gnu.io.SerialPort;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class SerialListener {
 
@@ -13,19 +15,12 @@ public class SerialListener {
         this.serialPort = serialPort;
     }
 
-    public byte[] receive() {
+    public String receive() {
         InputStream in = null;
-        byte[] bytes = null;
         try {
             in = serialPort.getInputStream();
-            int buffLength = in.available();        //获取buffer里的数据长度
-
-            while (buffLength != 0) {
-                bytes = new byte[buffLength];    //初始化byte数组为buffer中数据的长度
-                //noinspection ResultOfMethodCallIgnored
-                in.read(bytes);
-                buffLength = in.available();
-            }
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
+            return bufferedReader.readLine();
         } catch (IOException e) {
             System.out.println(e.getMessage());
         } finally {
@@ -38,7 +33,7 @@ public class SerialListener {
             }
 
         }
-        return bytes;
+        return null;
     }
 
 

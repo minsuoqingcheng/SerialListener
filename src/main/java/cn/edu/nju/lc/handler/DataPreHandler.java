@@ -13,15 +13,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
 
 @Component
 public class DataPreHandler {
 
     private Logger logger = LoggerFactory.getLogger(DataPreHandler.class);
 
-    private Pattern pattern = Pattern.compile("^\\{type:\\d+, data:\\d+}");
-    private StringBuilder buffer = new StringBuilder();
     private Executor executors = Executors.newFixedThreadPool(4);
 
     @Autowired
@@ -30,33 +27,23 @@ public class DataPreHandler {
     private MqttService mqttService;
 
 
-    public void handle(byte[] data) {
-
-        String parsedData = new String(data);
-        if (parsedData.contains("\r\n")) {
-            buffer.append(parsedData);
-            int flagIndex = buffer.indexOf("\r\n");
-            String mergedData = buffer.substring(0, flagIndex);
-            if (pattern.matcher(mergedData).matches()) {
-                executors.execute(() -> {
-                    CollectData collectData = JSONObject.toJavaObject(JSON.parseObject(mergedData), CollectData.class);
-                    collectData.setTime(System.currentTimeMillis());    //设置获取到的时间
-                    DataType dataType = DataType.getDataType(collectData.getType());
-                    switch (dataType) {
-                        case NON_STREAM:
-                            httpService.send(collectData);
-                            break;
-                        case STREAM:
-                            mqttService.send(collectData);
-                            break;
-                        default:
-                            logger.warn("get Unknown data type!!!");
-                    }
-                });
-            }
-            buffer.delete(0, flagIndex+2);
-        } else {
-            buffer.append(parsedData);
+    public void handle(String data) {
+        if (data.startsWith("{") && data.endsWith("}")) {
+            executors.execute(() -> {
+                CollectData collectData = JSONObject.toJavaObject(JSON.parseObject(data), CollectData.class);
+                collectData.setTime(System.currentTimeMillis());    //设置获取到的时间
+                DataType dataType = DataType.getDataType(collectData.getType());
+                switch (dataType) {
+                    case NON_STREAM:
+                        httpService.send(collectData);
+                        break;
+                    case STREAM:
+                        mqttService.send(collectData);
+                        break;
+                    default:
+                        logger.warn("get Unknown data type!!!");
+                }
+            });
         }
     }
 

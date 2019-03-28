@@ -16,7 +16,7 @@ public class SerialListenerApplication {
         String portName = SerialTool.getExperimentPortName();
         SerialPort serialPort = SerialTool.openPort(portName, 9600);
         SerialListener listener = new SerialListener(serialPort);
-        byte[] data;
+        String data;
         DataPreHandler dataPreHandler = applicationContext.getBean(DataPreHandler.class);
         while (true) {
             if ((data = listener.receive()) != null) {
